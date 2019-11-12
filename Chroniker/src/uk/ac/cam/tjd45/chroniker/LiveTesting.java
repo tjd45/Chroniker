@@ -57,7 +57,6 @@ public class LiveTesting{
 		//JadeAnyaPallister_MvTFJJazsw
 		//LaraHorin_P0QkyDNeQQ
 		ingest.basicIngest(person);
-		ingest.dbi.printOut(person);
 		
 		
 		

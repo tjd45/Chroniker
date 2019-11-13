@@ -233,19 +233,21 @@ public class Unpacker {
 
 
 	}
-	
+
 	protected static void addParticipantIds(){
 		for(Conversation c : allConvs){
 			c.updatePartIds(uPeople);
 		}
 	}
-	
-	
+
+
 
 	public static void ingest(){
 		extract("/Users/ThomasDavidson/Documents/messages/inbox/");
 
 		getUniquePeople(allConvs);
+		addParticipantIds();
+
 
 		dbi.resetMessages();
 		dbi.massMessageInput(allMess);
@@ -258,20 +260,7 @@ public class Unpacker {
 		dbi.massPersonInput(allPeople);
 	}
 
-	public static void main(String [] args){
-	
-		extract("/Users/ThomasDavidson/Documents/messages/inbox/");
-		dbi.populateAllPeople(allPeople);
-		
-		getUniquePeople(allConvs);
-		
-		addParticipantIds();
-		
-		
-		
-		dbi.resetConversations();
-		dbi.massConversationInput(allConvs);
-	}
+
 
 
 

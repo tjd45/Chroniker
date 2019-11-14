@@ -26,6 +26,7 @@ public class Timeline {
 	public long eDate;
 
 	public ArrayList<TLBin> bins;
+	public ArrayList<Message> allMess;
 	
 	private databaseInteracter dbi = new databaseInteracter();
 
@@ -55,10 +56,12 @@ public class Timeline {
 		}
 
 		sDate = START_OF_TIME;
+		//sDate = 1572440713470L;
 		eDate = END_OF_TIME;
-
+		//eDate = 1572440713470L;
 
 		numOfBins = (eDate-sDate)/binSize;
+	
 	}
 
 
@@ -72,18 +75,30 @@ public class Timeline {
 		long start = sDate;
 		long end = sDate + binSize;
 		
+		allMess = dbi.getMess(sDate, eDate);
 		
-		for(int i = 0; i<numOfBins; i++){
-			sent = dbi.getSent(start,end);
-			rcv = dbi.getRcv(start,end);
+		long binNum;
+		int binChecker = 0;
+		
+		for(Message m : allMess){
+			binNum = (m.timestamp - sDate)/binSize;
+			if(binNum!=binChecker){
+				bins.add(new TLBin(binChecker, sent, rcv));
+				binChecker = (int) binNum;
+				sent = 0;
+				rcv = 0;
+			}
 			
-
-			start += binSize;
-			end += binSize;
+			if(m.sendId == 0){
+				//sent += m.volume;
+				sent++;
+			}else{
+				//rcv += m.volume;
+				rcv++;
+			}
 			
-			bins.add(new TLBin(i, sent, rcv));
+			
 		}
-		
 		
 		
 	}

@@ -430,7 +430,8 @@ public class databaseInteracter {
 
 	}
 	
-	public int getSent(Long start, Long end){
+	public ArrayList<Message> getMess(Long start, Long end){
+		ArrayList<Message> messages = new ArrayList<Message>();
 		try (
 				// Step 1: Allocate a database 'Connection' object
 				Connection conn = DriverManager.getConnection(
@@ -442,21 +443,27 @@ public class databaseInteracter {
 				Statement stmt = conn.createStatement();
 				) {
 
-			String sql = "SELECT count(*) from messages WHERE sendid = 0 AND timestamp >= "+start+" AND timestamp < "+end;
+			
+			
+			String sql = "SELECT * from messages WHERE timestamp >= "+start+" AND timestamp < "+end+" ORDER BY timestamp";
 			
 			
 			ResultSet rs = stmt.executeQuery(sql);
 			
+			while(rs.next()){
+				messages.add(new Message(rs.getLong("timestamp"), rs.getString("sender"), rs.getInt("sendid"), rs.getString("content"), rs.getInt("convid")));
+			}
+			
 			rs.first();
 			
-			return(rs.getInt("count(*)"));
+			return messages;
 			
 
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return 0;
+		return messages;
 
 	}
 	

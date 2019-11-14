@@ -14,4 +14,13 @@ public class TLBin {
 		rcvRaw = rcv;
 		
 	}
+	
+	TLBin(int i, int sent, int rcv, int groupSent, int groupRcv){
+		id = i;
+		sentRaw = sent;
+		rcvRaw = rcv;
+		sntGRP = groupSent;
+		rcvGRP = groupRcv;
+		
+	}
 }

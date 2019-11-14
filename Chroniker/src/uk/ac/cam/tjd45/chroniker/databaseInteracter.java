@@ -504,4 +504,37 @@ public class databaseInteracter {
 
 	}
 	
+	public boolean isGroup(int convid){
+		try (
+				// Step 1: Allocate a database 'Connection' object
+				Connection conn = DriverManager.getConnection(
+						"jdbc:mysql://localhost:3306/CHRONIKER?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC",
+						"myuser", "password");   // For MySQL
+				// The format is: "jdbc:mysql://hostname:port/databaseName", "username", "password"
+
+				// Step 2: Allocate a 'Statement' object in the Connection
+				Statement stmt = conn.createStatement();
+				) {
+
+			
+			
+			String sql = "SELECT grp from conversations WHERE convid = "+convid;
+			
+			
+			ResultSet rs = stmt.executeQuery(sql);
+		
+			rs.first();
+			
+			return rs.getBoolean("grp");
+			
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
+
+	}
+
+	
 }

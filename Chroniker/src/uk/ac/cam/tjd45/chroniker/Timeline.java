@@ -24,8 +24,8 @@ public class Timeline {
 	final long START_OF_TIME = 1241369631000L;
 	final long END_OF_TIME = 1573045513470L;
 	
-	final int maxWidth = 2560;
-	final int maxHeight = 1080;
+	final int maxWidth = 25600;
+	final int maxHeight = 10800;
 
 	public static Date parseDate(String date) {
 		try {
@@ -73,13 +73,18 @@ public class Timeline {
 
 		}
 
-		Date startDate = parseDate("06-01-2019");
-		Date endDate = parseDate("07-01-2019");
+		Date startDate = parseDate("25-09-2019");
+		Date endDate = parseDate("27-09-2019");
+		
 		
 		sDate = START_OF_TIME;
 		
+		sDate = startDate.getTime();
+		
 		//sDate = 1420844400000L;
 		eDate = END_OF_TIME;
+		
+		eDate = endDate.getTime();
 		//eDate = 1572440713470L;
 
 		numOfBins = (eDate-sDate)/binSize;
@@ -97,8 +102,10 @@ public class Timeline {
 		int groupRcv = 0;
 
 		//allMess = dbi.getMess(sDate, eDate);
-		allMess = dbi.getMess(sDate, eDate);
-
+		//allMess = dbi.getMess(sDate, eDate);
+		allMess = dbi.getConvMess(1553, sDate, eDate);
+		
+		
 		long binNum;
 		int binChecker = 0;
 

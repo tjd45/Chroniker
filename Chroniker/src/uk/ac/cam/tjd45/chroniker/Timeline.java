@@ -1,13 +1,20 @@
 package uk.ac.cam.tjd45.chroniker;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import javax.imageio.ImageIO;
+
 public class Timeline {
 	public long binSize;
-	public boolean aggregated;
+	public boolean individual;
 	
 	public long numOfBins;
 
@@ -33,7 +40,7 @@ public class Timeline {
 
 	Timeline(String bSize){
 
-		aggregated = true;
+		individual = true;
 
 		switch(bSize) {
 		case "MILLISECOND": binSize = 1L;
@@ -72,9 +79,6 @@ public class Timeline {
 		int sent = 0;
 		int rcv = 0;
 		
-		long start = sDate;
-		long end = sDate + binSize;
-		
 		allMess = dbi.getMess(sDate, eDate);
 		
 		long binNum;
@@ -90,11 +94,11 @@ public class Timeline {
 			}
 			
 			if(m.sendId == 0){
-				//sent += m.volume;
-				sent++;
+				sent += individual ? 1 : m.volume;
+			
 			}else{
-				//rcv += m.volume;
-				rcv++;
+				rcv += individual ? 1 : m.volume;
+				
 			}
 			
 			
@@ -107,6 +111,42 @@ public class Timeline {
 		for(TLBin b : bins) {
 			System.out.println(b.id+","+b.sentRaw+","+b.rcvRaw);
 		}
+		
+		 int width = 250;
+	        int height = 250;
+	 
+	        // Constructs a BufferedImage of one of the predefined image types.
+	        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+	 
+	        // Create a graphics which can be used to draw into the buffered image
+	        Graphics2D g2d = bufferedImage.createGraphics();
+	 
+	        // fill all the image with white
+	        g2d.setColor(Color.white);
+	        g2d.fillRect(0, 0, width, height);
+	 
+	        // create a circle with black
+	        g2d.setColor(Color.black);
+	        g2d.fillOval(0, 0, width, height);
+	 
+	        // create a string with yellow
+	        g2d.setColor(Color.yellow);
+	        g2d.drawString("Java Code Geeks", 50, 120);
+	 
+	        // Disposes of this graphics context and releases any system resources that it is using. 
+	        g2d.dispose();
+	 
+	        // Save as JPEG
+	        File file = new File("/Users/ThomasDavidson/Documents/Program Output/myimage.jpg");
+	        try {
+				ImageIO.write(bufferedImage, "jpg", file);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		
+		
+		
 	}
 
 

@@ -430,4 +430,65 @@ public class databaseInteracter {
 
 	}
 	
+	public int getSent(Long start, Long end){
+		try (
+				// Step 1: Allocate a database 'Connection' object
+				Connection conn = DriverManager.getConnection(
+						"jdbc:mysql://localhost:3306/CHRONIKER?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC",
+						"myuser", "password");   // For MySQL
+				// The format is: "jdbc:mysql://hostname:port/databaseName", "username", "password"
+
+				// Step 2: Allocate a 'Statement' object in the Connection
+				Statement stmt = conn.createStatement();
+				) {
+
+			String sql = "SELECT count(*) from messages WHERE sendid = 0 AND timestamp >= "+start+" AND timestamp < "+end;
+			
+			
+			ResultSet rs = stmt.executeQuery(sql);
+			
+			rs.first();
+			
+			return(rs.getInt("count(*)"));
+			
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return 0;
+
+	}
+	
+	public int getRcv(Long start, Long end){
+		try (
+				// Step 1: Allocate a database 'Connection' object
+				Connection conn = DriverManager.getConnection(
+						"jdbc:mysql://localhost:3306/CHRONIKER?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC",
+						"myuser", "password");   // For MySQL
+				// The format is: "jdbc:mysql://hostname:port/databaseName", "username", "password"
+
+				// Step 2: Allocate a 'Statement' object in the Connection
+				Statement stmt = conn.createStatement();
+				) {
+
+			String sql = "SELECT count(*) from messages WHERE sendid <> 0 AND timestamp >= "+start+" AND timestamp < "+end;
+			
+			
+			
+			ResultSet rs = stmt.executeQuery(sql);
+			
+			rs.first();
+			
+			return(rs.getInt("count(*)"));
+			
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return 0;
+
+	}
+	
 }

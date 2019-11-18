@@ -11,7 +11,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+
+import java.util.Random;
 
 import javax.imageio.ImageIO;
 
@@ -23,7 +26,7 @@ public class Timeline {
 
 	final long START_OF_TIME = 1241369631000L;
 	final long END_OF_TIME = 1573045513470L;
-	
+
 	final int maxWidth = 25600;
 	final int maxHeight = 10800;
 
@@ -42,16 +45,42 @@ public class Timeline {
 	public ArrayList<Message> allMess;
 
 	private databaseInteracter dbi = new databaseInteracter();
-	
+
 	private ArrayList<Integer> groupConv = new ArrayList<>();
 	private ArrayList<Integer> notGroupConv = new ArrayList<>();
+
+	public Map<Integer,Color> colourList = new HashMap<Integer,Color>();
+
+	public String outputLoc = "/Users/ThomasDavidson/Documents/Program Output/Chroniker/";
+
+	static boolean defaultIndiv = true;
 	
-	
+	int imWidth,imHeight,imBinWidth,imCentre;
+	double unitHeight;
 
+	double ratio = 1;
 
-	Timeline(String bSize){
+	Timeline(){
+		this("YEAR","","",defaultIndiv);
+	}
 
-		individual = false;
+	Timeline(String binSize){
+		this(binSize,"","",defaultIndiv);
+	}
+
+	Timeline(String binSize, String start, String end){
+		this(binSize,start,end,defaultIndiv);
+	}
+
+	Timeline(String bSize, String start, String end, boolean indiv){
+		
+		String sStart = (start.length()>0) ? start : "Not Specified";
+		String sEnd = (end.length()>0) ? end : "Not Specified";
+		System.out.println("Creating new timeline with Bin Size: "+bSize+", Start Date: "+sStart+", End Date: "+sEnd+", Individual Messages: "+indiv);
+
+		individual = indiv;
+		sDate = START_OF_TIME;
+		eDate = END_OF_TIME;
 
 		switch(bSize) {
 		case "MILLISECOND": binSize = 1L;
@@ -70,236 +99,339 @@ public class Timeline {
 		break;
 		case "YEAR": binSize = 31536000000L;
 		break;
-
+		default : binSize = 2592000000L;
 		}
 
-		Date startDate = parseDate("25-09-2019");
-		Date endDate = parseDate("27-09-2019");
-		
-		
-		sDate = START_OF_TIME;
-		
-		sDate = startDate.getTime();
-		
-		//sDate = 1420844400000L;
-		eDate = END_OF_TIME;
-		
-		eDate = endDate.getTime();
-		//eDate = 1572440713470L;
+		if(start.length()>0)
+			sDate = parseDate(start).getTime();
+		if(end.length()>0)
+			eDate = parseDate(end).getTime();
 
-		numOfBins = (eDate-sDate)/binSize;
+		numOfBins = (long) Math.ceil((float)(eDate-sDate)/binSize);
+		
+		System.out.println("Timeline created with "+numOfBins+" bins");
 
 	}
-
 
 	void generateBins(){
+		generateBins(-1);
+	}
+
+	void generateBins(int convID){
 		bins = new ArrayList<TLBin>();
 
+		prepBin prep = new prepBin();
 
-		int sent = 0;
-		int rcv = 0;
-		int groupSent = 0;
-		int groupRcv = 0;
+		System.out.println("Retrieving messages from database");
+		if(convID<0){
+			allMess = dbi.getMess(sDate, eDate);
+		}
+		else{
+			allMess = dbi.getConvMess(convID, sDate, eDate);
+		}
+		System.out.println("Messages retrieved");
 
-		//allMess = dbi.getMess(sDate, eDate);
-		//allMess = dbi.getMess(sDate, eDate);
-		allMess = dbi.getConvMess(1553, sDate, eDate);
-		
-		
 		long binNum;
 		int binChecker = 0;
+		int thisSentVol = 0;
+		int thisRcvVol = 0;
+
+		int totalMessages = allMess.size();
+		int Percent = totalMessages/3;
+		int messCounter = 0;
+		
+		System.out.println("Generating bins for "+totalMessages+" total messages");
 
 		for(Message m : allMess){
+
 			binNum = (m.timestamp - sDate)/binSize;
+
 			if(binNum!=binChecker){
-				bins.add(new TLBin(binChecker, sent, rcv, groupSent, groupRcv));
+				bins.add(new TLBin(binChecker, prep));
+				prep.clear();
+				thisSentVol = 0;
+				thisRcvVol = 0;
 				binChecker = (int) binNum;
-				sent = 0;
-				rcv = 0;
-				groupSent = 0;
-				groupRcv = 0;
 			}
 
-			boolean group = false;
-			
-			if(groupConv.contains(m.messID)){
-				group = true;
-			}else if(notGroupConv.contains(m.messID)){
-				group = false;
-			}else{
-				group = dbi.isGroup(m.messID);
-				if(group){
-					groupConv.add(m.messID);
-				}else{
-					notGroupConv.add(m.messID);
-				}	
+			boolean group = isGroupMessage(m.messID);
+
+			if(!colourList.containsKey(m.messID)){
+				Random rand = new Random();
+				float r = rand.nextFloat();
+				float g = rand.nextFloat();
+				float b = rand.nextFloat();
+
+				colourList.put(m.messID, new Color(r,g,b));
 			}
-			
+
 			if(m.sendId == 0){
-				
-				sent += individual ? 1 : m.volume;
-				
-				if(group)
-					groupSent += m.volume;
+
+				thisSentVol = individual ? 1 : m.volume;
+				prep.sent += thisSentVol;
+
+				if(prep.richSent.containsKey(m.messID)){
+					prep.richSent.put(m.messID, prep.richSent.get(m.messID)+thisSentVol);
+				}else{
+					prep.richSent.put(m.messID, thisSentVol);
+				}
+
+
+				if(group){
+					prep.groupSent += thisSentVol;
+				}
 
 			}else{
-				rcv += individual ? 1 : m.volume;
-				
-				if(group)
-					groupRcv += m.volume;
+
+				thisRcvVol = individual ? 1 : m.volume;
+				prep.rcv += thisRcvVol;
+
+
+				if(prep.richReceive.containsKey(m.messID)){
+					prep.richReceive.put(m.messID, prep.richReceive.get(m.messID)+thisRcvVol);
+				}else{
+					prep.richReceive.put(m.messID, thisRcvVol);
+				}
+
+
+				if(group){
+					prep.groupRcv += thisRcvVol;
+				}
+
+
+
 
 			}
 
+			messCounter++;
 
+			if(messCounter%Percent==0){
+				System.out.println(Math.ceil(((float)messCounter/totalMessages)*100)+"% Completed");
+			}
+			
 		}
+		
+		bins.add(new TLBin(binChecker, prep));
 
+		System.out.println("Bins Generated");
 
 	}
 
-	void printBins() {
+	boolean isGroupMessage(int messID){
+		boolean checker = false;
+
+		if(groupConv.contains(messID)){
+			return true;
+		}else if(notGroupConv.contains(messID)){
+			return false;
+		}else{
+			checker = dbi.isGroup(messID);
+			if(checker){
+				groupConv.add(messID);
+				return true;
+			}else{
+				notGroupConv.add(messID);
+				return false;
+			}	
+		}
+	}
+	
+	void setDimensions(){
 		int maxSent = 0;
 		int maxRcv = 0;
+		int minSoR = 100;
 
-		double unitHeight = 0.0;
-		int imBinWidth = 0;
-		
+		unitHeight = 0.0;
+		imBinWidth = 0;
+
 
 		for(TLBin b : bins) {
 			if(b.sentRaw>maxSent)
 				maxSent = b.sentRaw;
 			if(b.rcvRaw>maxRcv)
 				maxRcv = b.rcvRaw;
+			if(b.sentRaw<minSoR&&b.sentRaw>0){
+				minSoR = b.sentRaw;
+			}if(b.rcvRaw<minSoR&&b.rcvRaw>0){
+				minSoR = b.rcvRaw;
+			}
 		}
-		
-		
 
-		int width = maxWidth;
-		int height = maxHeight;
-		int centre = maxHeight/2;
-		
-		int range = (maxSent + maxRcv)*2;
-		unitHeight = (double)height/(double)range;
-		
-		System.out.println(unitHeight);
+		int range = maxSent + maxRcv;
 
-		imBinWidth = (int) (maxWidth/numOfBins);
+		int width = (int)numOfBins;
+		int height = range;
+
+		double normaliser;
+		if(range>numOfBins){
+			normaliser = (range*ratio)/numOfBins;
+			width = (int) Math.ceil(numOfBins*normaliser);
+		}else if(numOfBins>range){
+			normaliser = (numOfBins*ratio)/range;
+			height = (int)Math.ceil(range*normaliser);
+		}
+
+		width = (int) Math.ceil((float)width/minSoR);
+		height = (int) Math.ceil((float)height/minSoR);
+
+		
+		imBinWidth = (int) (width/(numOfBins));
+		width = (int) (imBinWidth*(numOfBins));
+		
+		unitHeight = (double)(height/(double)range);
+		height = (int) Math.ceil(unitHeight*range);
+		
+		int centre = height/2;
+		
+		imWidth = width;
+		imHeight = height;
+		imCentre = centre;
+		
+		
+	}
+	
+	
+
+	void print(String opt) {
+		
+		System.out.println("Setting Dimensions with Ratio : "+ratio);
+		setDimensions();
+		System.out.println("Dimensions Set: Image Width = "+imWidth+" Image Height = "+imHeight+" Image Bin Width = "+imBinWidth+" Unit Height = "+unitHeight);
 		
 		// Constructs a BufferedImage of one of the predefined image types.
-		BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		BufferedImage bufferedImage = new BufferedImage(imWidth, imHeight, BufferedImage.TYPE_INT_RGB);
 
 		// Create a graphics which can be used to draw into the buffered image
 		Graphics2D g2d = bufferedImage.createGraphics();
 
-		// fill all the image with white
+		// fill all the image with black
 		g2d.setColor(Color.black);
-		g2d.fillRect(0, 0, width, height);
+		g2d.fillRect(0, 0, imWidth, imHeight);
+
+		System.out.print("Printing to File - ");
 		
-		
-		for(TLBin b : bins) {
-			g2d.setColor(Color.blue);
-			int rcvHeight = (int) (b.rcvRaw*unitHeight);
-			g2d.fillRect(b.id*imBinWidth, centre, imBinWidth, rcvHeight);
-			g2d.setColor(Color.green);
-			int sentHeight = (int) (b.sentRaw*unitHeight);
-			g2d.fillRect(b.id*imBinWidth, centre-sentHeight, imBinWidth, sentHeight);
+		switch(opt){
+		case "RAW" : System.out.println("RAW");rawPrint(g2d);
+		break;
+		case "GRP" : System.out.println("GRP");grpPrint(g2d);
+		break;
+		case "RICH" : System.out.println("RICH");richPrint(g2d);
+		break;
+		case "CONSOLE" : System.out.println("CONSOLE");consolePrint();
+		break;
+		default : rawPrint(g2d);
 		}
 		
-		
-
-		g2d.setColor(Color.white);
-		//g2d.setStroke(new BasicStroke (3));
-		//g2d.drawLine(0, centre, width, centre);
-
+		System.out.println("Printing Complete");
 		// Disposes of this graphics context and releases any system resources that it is using. 
 		g2d.dispose();
 
 		// Save as JPEG
-		File file = new File("/Users/ThomasDavidson/Documents/Program Output/myimage.jpg");
+		String filename = "myimage.jpg";
+		
+		File file = new File(outputLoc+filename);
 		try {
 			ImageIO.write(bufferedImage, "jpg", file);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-
+		
+		System.out.println("Saved to File: "+filename);
 
 	}
 	
-	void printGRPBins() {
-		int maxSent = 0;
-		int maxRcv = 0;
-
-		double unitHeight = 0.0;
-		int imBinWidth = 0;
-		
-
+	void rawPrint(Graphics2D g){
 		for(TLBin b : bins) {
-			if(b.sentRaw>maxSent)
-				maxSent = b.sentRaw;
-			if(b.rcvRaw>maxRcv)
-				maxRcv = b.rcvRaw;
-		}
-		
-		
-
-		int width = maxWidth;
-		int height = maxHeight;
-		int centre = maxHeight/2;
-		
-		int range = (maxSent + maxRcv)*2;
-		unitHeight = (double)height/(double)range;
-		
-		System.out.println(unitHeight);
-
-		imBinWidth = (int) (maxWidth/numOfBins);
-		
-		// Constructs a BufferedImage of one of the predefined image types.
-		BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-
-		// Create a graphics which can be used to draw into the buffered image
-		Graphics2D g2d = bufferedImage.createGraphics();
-
-		// fill all the image with white
-		g2d.setColor(Color.black);
-		g2d.fillRect(0, 0, width, height);
-		
-		
-		for(TLBin b : bins) {
-			g2d.setColor(new Color(0,0,255));
+			g.setColor(Color.blue);
 			int rcvHeight = (int) (b.rcvRaw*unitHeight);
-			g2d.fillRect(b.id*imBinWidth, centre, imBinWidth, rcvHeight);
-			int rcvDiff = (int)((b.rcvRaw-b.rcvGRP)*unitHeight);
-			int rcvGRPHeight = (int) ((b.rcvGRP)*unitHeight);
-			g2d.setColor(new Color(0,122,255));
-			g2d.fillRect(b.id*imBinWidth, centre+rcvDiff, imBinWidth, rcvGRPHeight);
-			
-			g2d.setColor(new Color(0,142,48));
+			g.fillRect(b.id*imBinWidth, imCentre, imBinWidth, rcvHeight);
+			g.setColor(Color.green);
 			int sentHeight = (int) (b.sentRaw*unitHeight);
-			g2d.fillRect(b.id*imBinWidth, centre-sentHeight, imBinWidth, sentHeight);
+			g.fillRect(b.id*imBinWidth, imCentre-sentHeight, imBinWidth, sentHeight);
+		}
+		
+		g.setColor(Color.white);
+
+	}
+	
+	void grpPrint(Graphics2D g){
+		for(TLBin b : bins) {
+			g.setColor(new Color(0,0,255));
+			int rcvHeight = (int) (b.rcvRaw*unitHeight);
+			g.fillRect(b.id*imBinWidth, imCentre, imBinWidth, rcvHeight);
+			int rcvGRPHeight = (int) (b.rcvGRP*unitHeight);
+			g.setColor(new Color(0,122,255));
+			g.fillRect(b.id*imBinWidth, imCentre+(rcvHeight-rcvGRPHeight), imBinWidth, rcvGRPHeight);
+
+			g.setColor(new Color(0,142,48));
+			int sentHeight = (int) (b.sentRaw*unitHeight);
+			g.fillRect(b.id*imBinWidth, imCentre-sentHeight, imBinWidth, sentHeight);
 			int sentGRPHeight = (int) (b.sntGRP*unitHeight);
-			g2d.setColor(new Color(0,255,122));
-			g2d.fillRect(b.id*imBinWidth, centre-sentHeight, imBinWidth, sentGRPHeight);
+			g.setColor(new Color(0,255,122));
+			g.fillRect(b.id*imBinWidth, imCentre-sentHeight, imBinWidth, sentGRPHeight);
 		}
-		
-		
+	}
+	
+	void richPrint(Graphics2D g){
+		int RrHeight = 0;
+		int RsHeight = 0;
+		int lastHeight = 0;
 
-		g2d.setColor(Color.white);
-		//g2d.setStroke(new BasicStroke (3));
-		//g2d.drawLine(0, centre, width, centre);
+		for(TLBin b : bins) {
 
-		// Disposes of this graphics context and releases any system resources that it is using. 
-		g2d.dispose();
+			lastHeight = 0;
 
-		// Save as JPEG
-		File file = new File("/Users/ThomasDavidson/Documents/Program Output/myimage.jpg");
-		try {
-			ImageIO.write(bufferedImage, "jpg", file);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Iterator it = b.rcvRich.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry pair = (Map.Entry)it.next();
+				g.setColor(colourList.get(pair.getKey()));
+
+				RrHeight = (int) ((int)pair.getValue()*unitHeight);
+
+				g.fillRect(b.id*imBinWidth, imCentre+lastHeight, imBinWidth, RrHeight);
+
+				lastHeight +=RrHeight;
+
+
+				it.remove(); // avoids a ConcurrentModificationException
+			}
+			lastHeight = 0;
+			it = b.sntRich.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry pair = (Map.Entry)it.next();
+
+				g.setColor(colourList.get(pair.getKey()));
+
+				RsHeight = (int) ((int)pair.getValue()*unitHeight);
+
+				g.fillRect(b.id*imBinWidth, imCentre-lastHeight-RsHeight, imBinWidth, RsHeight);
+
+				lastHeight +=RsHeight;
+
+
+
+
+				it.remove(); // avoids a ConcurrentModificationException
+			}
+
+
+
 		}
 
+
+
+		g.setColor(Color.white);
+		g.setStroke(new BasicStroke (1));
+		g.drawLine(0, imCentre, imWidth, imCentre);
+	}
+
+	void consolePrint(){
+		for(TLBin b : bins){
+			System.out.println("Bin "+b.id);
+			System.out.println("Quant Sent: "+b.sentRaw+" Quant Received: "+b.rcvRaw);
+			b.print();
+		}
 
 
 	}

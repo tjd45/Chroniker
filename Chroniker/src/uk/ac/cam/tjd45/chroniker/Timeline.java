@@ -54,11 +54,14 @@ public class Timeline {
 	public String outputLoc = "/Users/ThomasDavidson/Documents/Program Output/Chroniker/";
 
 	static boolean defaultIndiv = true;
-	
+
 	int imWidth,imHeight,imBinWidth,imCentre;
 	double unitHeight;
 
 	double ratio = 1;
+	double borderFactor = 0.1;
+	
+	double sf = 1.0;
 
 	Timeline(){
 		this("YEAR","","",defaultIndiv);
@@ -73,7 +76,7 @@ public class Timeline {
 	}
 
 	Timeline(String bSize, String start, String end, boolean indiv){
-		
+
 		String sStart = (start.length()>0) ? start : "Not Specified";
 		String sEnd = (end.length()>0) ? end : "Not Specified";
 		System.out.println("Creating new timeline with Bin Size: "+bSize+", Start Date: "+sStart+", End Date: "+sEnd+", Individual Messages: "+indiv);
@@ -108,7 +111,7 @@ public class Timeline {
 			eDate = parseDate(end).getTime();
 
 		numOfBins = (long) Math.ceil((float)(eDate-sDate)/binSize);
-		
+
 		System.out.println("Timeline created with "+numOfBins+" bins");
 
 	}
@@ -139,7 +142,7 @@ public class Timeline {
 		int totalMessages = allMess.size();
 		int Percent = totalMessages/3;
 		int messCounter = 0;
-		
+
 		System.out.println("Generating bins for "+totalMessages+" total messages");
 
 		for(Message m : allMess){
@@ -208,9 +211,9 @@ public class Timeline {
 			if(messCounter%Percent==0){
 				System.out.println(Math.ceil(((float)messCounter/totalMessages)*100)+"% Completed");
 			}
-			
+
 		}
-		
+
 		bins.add(new TLBin(binChecker, prep));
 
 		System.out.println("Bins Generated");
@@ -235,8 +238,8 @@ public class Timeline {
 			}	
 		}
 	}
-	
-	void setDimensions(){
+
+	void setDimensions(String resolution){
 		int maxSent = 0;
 		int maxRcv = 0;
 		int minSoR = 100;
@@ -257,47 +260,73 @@ public class Timeline {
 			}
 		}
 
-		int range = maxSent + maxRcv;
+		int range = Math.max(maxSent,maxRcv)*2;
+	
 
 		int width = (int)numOfBins;
-		int height = range;
+		int height = (int)(range+(range*borderFactor));
+	
 
 		double normaliser;
 		if(range>numOfBins){
-			normaliser = (range*ratio)/numOfBins;
-			width = (int) Math.ceil(numOfBins*normaliser);
+			normaliser = (height*ratio)/numOfBins;
+			width = (int) Math.ceil(width*normaliser);
 		}else if(numOfBins>range){
-			normaliser = (numOfBins*ratio)/range;
-			height = (int)Math.ceil(range*normaliser);
+			normaliser = (width*ratio)/range;
+			height = (int)Math.ceil(height*normaliser);
 		}
 
 		width = (int) Math.ceil((float)width/minSoR);
 		height = (int) Math.ceil((float)height/minSoR);
 
-		
+
+
+		double maxArea = 600000000.0;
+		double vhiArea = 300000000.0;
+		double hiArea = 150000000.0;
+		double medArea = 50000000.0;
+		double loArea = 10000000.0;
+		sf = 1.0;
+
+		if(resolution.equals("MAX")){
+			sf = Math.sqrt((maxArea/(width*height)));
+		}else if(resolution.equals("VHI")){
+			sf = Math.sqrt((vhiArea/(width*height)));
+		}else if(resolution.equals("HI")){
+			sf = Math.sqrt((hiArea/(width*height)));
+		}else if(resolution.equals("MED")){
+			sf = Math.sqrt((medArea/(width*height)));
+		}else if(resolution.equals("LO")){
+			sf = Math.sqrt((loArea/(width*height)));
+		}
+
+		width*=sf;
+		height*=sf;
+
 		imBinWidth = (int) (width/(numOfBins));
 		width = (int) (imBinWidth*(numOfBins));
+
+		unitHeight = (double)(height/(double)((range+range*borderFactor)));
 		
-		unitHeight = (double)(height/(double)range);
-		height = (int) Math.ceil(unitHeight*range);
-		
+		height = (int) Math.ceil(unitHeight*(range+range*borderFactor));
+
 		int centre = height/2;
-		
+
 		imWidth = width;
 		imHeight = height;
 		imCentre = centre;
-		
-		
-	}
-	
-	
 
-	void print(String opt) {
-		
-		System.out.println("Setting Dimensions with Ratio : "+ratio);
-		setDimensions();
+
+	}
+
+
+
+	void print(String opt, String res) {
+
+		System.out.println("Setting Dimensions with Ratio : "+ratio+" for "+res+" resolution");
+		setDimensions(res);
 		System.out.println("Dimensions Set: Image Width = "+imWidth+" Image Height = "+imHeight+" Image Bin Width = "+imBinWidth+" Unit Height = "+unitHeight);
-		
+
 		// Constructs a BufferedImage of one of the predefined image types.
 		BufferedImage bufferedImage = new BufferedImage(imWidth, imHeight, BufferedImage.TYPE_INT_RGB);
 
@@ -309,7 +338,7 @@ public class Timeline {
 		g2d.fillRect(0, 0, imWidth, imHeight);
 
 		System.out.print("Printing to File - ");
-		
+
 		switch(opt){
 		case "RAW" : System.out.println("RAW");rawPrint(g2d);
 		break;
@@ -321,14 +350,14 @@ public class Timeline {
 		break;
 		default : rawPrint(g2d);
 		}
-		
-		System.out.println("Printing Complete");
+
+		System.out.println("Printing Complete, saving to file...");
 		// Disposes of this graphics context and releases any system resources that it is using. 
 		g2d.dispose();
 
 		// Save as JPEG
 		String filename = "myimage.jpg";
-		
+
 		File file = new File(outputLoc+filename);
 		try {
 			ImageIO.write(bufferedImage, "jpg", file);
@@ -336,11 +365,11 @@ public class Timeline {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		System.out.println("Saved to File: "+filename);
 
 	}
-	
+
 	void rawPrint(Graphics2D g){
 		for(TLBin b : bins) {
 			g.setColor(Color.blue);
@@ -350,11 +379,11 @@ public class Timeline {
 			int sentHeight = (int) (b.sentRaw*unitHeight);
 			g.fillRect(b.id*imBinWidth, imCentre-sentHeight, imBinWidth, sentHeight);
 		}
-		
+
 		g.setColor(Color.white);
 
 	}
-	
+
 	void grpPrint(Graphics2D g){
 		for(TLBin b : bins) {
 			g.setColor(new Color(0,0,255));
@@ -372,7 +401,7 @@ public class Timeline {
 			g.fillRect(b.id*imBinWidth, imCentre-sentHeight, imBinWidth, sentGRPHeight);
 		}
 	}
-	
+
 	void richPrint(Graphics2D g){
 		int RrHeight = 0;
 		int RsHeight = 0;
@@ -422,7 +451,7 @@ public class Timeline {
 
 
 		g.setColor(Color.white);
-		g.setStroke(new BasicStroke (1));
+		g.setStroke(new BasicStroke ((int)sf));
 		g.drawLine(0, imCentre, imWidth, imCentre);
 	}
 

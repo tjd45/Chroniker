@@ -3,11 +3,11 @@ package uk.ac.cam.tjd45.chroniker;
 public class Console {
 	
 	public static void main(String[] args){
-		Timeline tl = new Timeline("YEAR","01-01-2009","");
+		Timeline tl = new Timeline("MONTH","01-01-2009","");
 		
 		tl.generateBins();
 		
-		tl.print("RICH","LO");
+		tl.print("RICH","MID");
 		
 	}
 

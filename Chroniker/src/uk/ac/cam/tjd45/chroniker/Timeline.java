@@ -150,6 +150,7 @@ public class Timeline {
 			binNum = (m.timestamp - sDate)/binSize;
 
 			if(binNum!=binChecker){
+				prep.sort();
 				bins.add(new TLBin(binChecker, prep));
 				prep.clear();
 				thisSentVol = 0;
@@ -214,6 +215,7 @@ public class Timeline {
 
 		}
 
+		prep.sort();
 		bins.add(new TLBin(binChecker, prep));
 
 		System.out.println("Bins Generated");
@@ -428,8 +430,10 @@ public class Timeline {
 			lastHeight = 0;
 			it = b.sntRich.entrySet().iterator();
 			while (it.hasNext()) {
+				
+				
 				Map.Entry pair = (Map.Entry)it.next();
-
+	
 				g.setColor(colourList.get(pair.getKey()));
 
 				RsHeight = (int) ((int)pair.getValue()*unitHeight);

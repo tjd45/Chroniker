@@ -2,6 +2,7 @@ package uk.ac.cam.tjd45.chroniker;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class TLBin {
@@ -10,8 +11,8 @@ public class TLBin {
 	public int rcvRaw;
 	public int sntGRP;
 	public int rcvGRP;
-	public Map<Integer,Integer> sntRich;
-	public Map<Integer,Integer> rcvRich;
+	public LinkedHashMap<Integer,Integer> sntRich;
+	public LinkedHashMap<Integer,Integer> rcvRich;
 	
 	
 	TLBin(int i, int sent, int rcv){
@@ -36,8 +37,8 @@ public class TLBin {
 		rcvRaw = rcv;
 		sntGRP = groupSent;
 		rcvGRP = groupRcv;
-		sntRich = new HashMap<Integer,Integer>(sR);
-		rcvRich = new HashMap<Integer,Integer>(rR);
+		sntRich = new LinkedHashMap<Integer,Integer>(sR);
+		rcvRich = new LinkedHashMap<Integer,Integer>(rR);
 	
 	}
 	
@@ -47,8 +48,8 @@ public class TLBin {
 		rcvRaw = p.rcv;
 		sntGRP = p.groupSent;
 		rcvGRP = p.groupRcv;
-		sntRich = new HashMap<Integer,Integer>(p.richSent);
-		rcvRich = new HashMap<Integer,Integer>(p.richReceive);
+		sntRich = new LinkedHashMap<Integer,Integer>(p.richSent);
+		rcvRich = new LinkedHashMap<Integer,Integer>(p.richReceive);
 	}
 	
 	public void print(){

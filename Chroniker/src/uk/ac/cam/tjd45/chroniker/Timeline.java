@@ -60,8 +60,11 @@ public class Timeline {
 
 	double ratio = 1;
 	double borderFactor = 0.1;
-	
+
 	double sf = 1.0;
+
+	int topXSent = 1;
+	int topXRcv = 1;
 
 	Timeline(){
 		this("YEAR","","",defaultIndiv);
@@ -160,15 +163,6 @@ public class Timeline {
 
 			boolean group = isGroupMessage(m.messID);
 
-			if(!colourList.containsKey(m.messID)){
-				Random rand = new Random();
-				float r = rand.nextFloat();
-				float g = rand.nextFloat();
-				float b = rand.nextFloat();
-
-				colourList.put(m.messID, new Color(r,g,b));
-			}
-
 			if(m.sendId == 0){
 
 				thisSentVol = individual ? 1 : m.volume;
@@ -263,11 +257,11 @@ public class Timeline {
 		}
 
 		int range = Math.max(maxSent,maxRcv)*2;
-	
+
 
 		int width = (int)numOfBins;
 		int height = (int)(range+(range*borderFactor));
-	
+
 
 		double normaliser;
 		if(range>numOfBins){
@@ -309,7 +303,7 @@ public class Timeline {
 		width = (int) (imBinWidth*(numOfBins));
 
 		unitHeight = (double)(height/(double)((range+range*borderFactor)));
-		
+
 		height = (int) Math.ceil(unitHeight*(range+range*borderFactor));
 
 		int centre = height/2;
@@ -321,6 +315,71 @@ public class Timeline {
 
 	}
 
+
+	void generateColourList(){
+
+		colourList.clear();
+
+		int counter;
+
+		for(TLBin bin : bins){
+			counter = 0;
+			for (Map.Entry<Integer, Integer> entry : bin.sntRich.entrySet()) {
+				Integer key = entry.getKey();
+				Integer value = entry.getValue();
+
+
+
+
+				if(counter<topXSent){
+
+					Random rand = new Random();
+					float r = rand.nextFloat();
+					float g = rand.nextFloat();
+					float b = rand.nextFloat();
+
+					colourList.put(key, new Color(r,g,b));
+				}else{
+					Random rand = new Random();
+					float r = rand.nextFloat();
+
+					if(!colourList.containsKey(key)){
+						colourList.put(key, new Color(r,r,r));
+					}
+				}
+
+
+				counter++;
+
+			}
+			counter = 0;
+			for (Map.Entry<Integer, Integer> entry : bin.rcvRich.entrySet()) {
+				Integer key = entry.getKey();
+
+				if(counter<topXSent){
+
+					Random rand = new Random();
+					float r = rand.nextFloat();
+					float g = rand.nextFloat();
+					float b = rand.nextFloat();
+
+					colourList.put(key, new Color(r,g,b));
+				}else{
+					Random rand = new Random();
+					float r = rand.nextFloat();
+
+					if(!colourList.containsKey(key)){
+						colourList.put(key, new Color(100,100,100));
+					}
+				}
+				counter++;
+
+			}
+		}
+
+
+
+	}
 
 
 	void print(String opt, String res) {
@@ -346,7 +405,7 @@ public class Timeline {
 		break;
 		case "GRP" : System.out.println("GRP");grpPrint(g2d);
 		break;
-		case "RICH" : System.out.println("RICH");richPrint(g2d);
+		case "RICH" : System.out.println("RICH");generateColourList();richPrint(g2d);
 		break;
 		case "CONSOLE" : System.out.println("CONSOLE");consolePrint();
 		break;
@@ -430,10 +489,10 @@ public class Timeline {
 			lastHeight = 0;
 			it = b.sntRich.entrySet().iterator();
 			while (it.hasNext()) {
-				
-				
+
+
 				Map.Entry pair = (Map.Entry)it.next();
-	
+
 				g.setColor(colourList.get(pair.getKey()));
 
 				RsHeight = (int) ((int)pair.getValue()*unitHeight);

@@ -7,7 +7,7 @@ public class Console {
 		
 		tl.generateBins();
 		
-		tl.print("RICH","MID");
+		tl.print("RICH","MED");
 		
 	}
 

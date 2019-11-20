@@ -35,7 +35,7 @@ public class Console {
 		
 		ConversationMap cm = new ConversationMap(sdf.format(cal.getTime()),"");
 		cm.generateNodes();
-		cm.print(outputLoc, "HI", "gsc");
+		cm.print(outputLoc, "MEDLO", "gsc");
 		
 //		boolean loop = true;
 //		while(loop){

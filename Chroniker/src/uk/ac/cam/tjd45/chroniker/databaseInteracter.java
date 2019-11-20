@@ -536,5 +536,40 @@ public class databaseInteracter {
 
 	}
 
+	public ArrayList<Integer> getParticipatingConversations(int id){
+		ArrayList<Integer> convList = new ArrayList<Integer>();
+		try (
+				// Step 1: Allocate a database 'Connection' object
+				Connection conn = DriverManager.getConnection(
+						"jdbc:mysql://localhost:3306/CHRONIKER?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC",
+						"myuser", "password");   // For MySQL
+				// The format is: "jdbc:mysql://hostname:port/databaseName", "username", "password"
+
+				// Step 2: Allocate a 'Statement' object in the Connection
+				Statement stmt = conn.createStatement();
+				) {
+
+			
+			
+			String sql = "SELECT convid from conversations WHERE partids like '%:"+id+":%'";
+			
+			ResultSet rs = stmt.executeQuery(sql);
+			
+			while(rs.next()){
+				convList.add(rs.getInt("convid"));
+			}
+			
+			rs.first();
+			
+			return convList;
+			
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return convList;
+
+	}
 	
 }

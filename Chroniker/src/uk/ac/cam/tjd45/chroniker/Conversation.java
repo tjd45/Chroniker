@@ -9,8 +9,12 @@ public class Conversation {
 	public boolean group;
 	public String participants;
 	public int length;
+	public int sntLength;
+	public int rcvLength;
 	public int numParts;
 	public String partIds;
+	public ArrayList<Integer> intPartIds;
+	public long firstMessage;
 	
 	Conversation(int c, boolean g, String p){
 		convid = c;
@@ -19,6 +23,18 @@ public class Conversation {
 		length = 0;
 		
 		numParts = p.split(":").length;
+		
+	}
+	
+	Conversation(int c, boolean g, int pID, int l){
+		intPartIds = new ArrayList<Integer>();
+		convid = c;
+		group = g;
+		
+		length = l;
+		intPartIds.add(pID);
+		
+		numParts = intPartIds.size();
 		
 	}
 	

@@ -373,12 +373,8 @@ public class ConversationMap {
 		int aWedgeX = (int)cw.location.getX()-(cw.diam/2);
 		int aWedgeY = (int)cw.location.getY()-(cw.diam/2);
 
-		int r,g,b;
-		r = 255;
-		g = 0;
-		b = 120;
 
-		Color sendColour = new Color(r,g,b);
+		Color sendColour = new Color(255,0,120);
 		Color rcvColour = new Color(0,195,225);
 
 		//		if(c.convid==49){

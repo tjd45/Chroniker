@@ -53,7 +53,7 @@ public class Timeline {
 
 	public String outputLoc = "/Users/ThomasDavidson/Documents/Program Output/Chroniker/";
 
-	static boolean defaultIndiv = true;
+	static boolean defaultIndiv = false;
 
 	int imWidth,imHeight,imBinWidth,imCentre;
 	double unitHeight;

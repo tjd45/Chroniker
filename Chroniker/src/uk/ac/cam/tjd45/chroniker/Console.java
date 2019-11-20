@@ -20,42 +20,43 @@ public class Console {
 
 	static SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
 
-	public static String outputLoc = "/Users/ThomasDavidson/Documents/Program Output/Chroniker/ConvMapGIF/";
+	public static String outputLoc = "/Users/ThomasDavidson/Documents/Program Output/Chroniker/";
 
 	public static void main(String[] args){
-		//		Timeline tl = new Timeline("MONTH","01-01-2009","");
-		//		
-		//		tl.generateBins();
-		//		
-		//		tl.print("RICH","MED");
+//						Timeline tl = new Timeline("DAY","01-01-2017","01-12-2019");	
+//						tl.generateBins(882);
+//						tl.print("RAW","MED");
+
+		//		Calendar cal = new GregorianCalendar(2015,8,1);
+		//		ConversationMap cm = new ConversationMap(sdf.format(cal.getTime()),"");
+		//		cm.generateNodes();
+		//		cm.print(outputLoc, "MEDLO", "gsc");
+
+		Clock clk = new Clock("","");
+		clk.generateHours();
+		clk.print(outputLoc, "","x");
 
 
-		Calendar cal = new GregorianCalendar(2015,8,1);
-
-		
-		ConversationMap cm = new ConversationMap(sdf.format(cal.getTime()),"");
-		cm.generateNodes();
-		cm.print(outputLoc, "MEDLO", "gsc");
-		
-//		boolean loop = true;
-//		while(loop){
-//
-//			ConversationMap cm = new ConversationMap("01-08-2015",sdf.format(cal.getTime()));
-//
-//			cm.generateNodes();
-//
-//			cm.print(outputLoc,"MEDLO","gsc");
-//
-//			if(cal.getTime().getTime()<END_OF_TIME){
-//				cal.add(Calendar.WEEK_OF_YEAR, 1);
-//			}else{
-//				loop = false;
-//			}
-//		}
+	}
 
 
 
-
+	public void gifGeneratorLoop(){
+		//		boolean loop = true;
+		//		while(loop){
+		//
+		//			ConversationMap cm = new ConversationMap("01-08-2015",sdf.format(cal.getTime()));
+		//
+		//			cm.generateNodes();
+		//
+		//			cm.print(outputLoc,"MEDLO","gsc");
+		//
+		//			if(cal.getTime().getTime()<END_OF_TIME){
+		//				cal.add(Calendar.WEEK_OF_YEAR, 1);
+		//			}else{
+		//				loop = false;
+		//			}
+		//		}
 	}
 
 }

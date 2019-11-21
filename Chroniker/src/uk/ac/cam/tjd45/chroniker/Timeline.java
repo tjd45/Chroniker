@@ -27,6 +27,12 @@ public class Timeline {
 	final long START_OF_TIME = 1241369631000L;
 	final long END_OF_TIME = 1573045513470L;
 
+	Color sendColour = new Color(255,0,120);
+	Color rcvColour = new Color(0,195,225);
+	
+	Color grpSendColour = new Color(200,0,100);
+	Color grpRcvColour = new Color(0,160,200);
+	
 	final int maxWidth = 25600;
 	final int maxHeight = 10800;
 
@@ -62,9 +68,11 @@ public class Timeline {
 	double borderFactor = 0.1;
 
 	double sf = 1.0;
-
+	int topX = 19;
 	int topXSent = 1;
 	int topXRcv = 1;
+	
+	ColourListGenerator clg = new ColourListGenerator();
 
 	Timeline(){
 		this("YEAR","","",defaultIndiv);
@@ -262,6 +270,7 @@ public class Timeline {
 		int width = (int)numOfBins;
 		int height = (int)(range+(range*borderFactor));
 
+		
 
 		double normaliser;
 		if(range>numOfBins){
@@ -272,33 +281,43 @@ public class Timeline {
 			height = (int)Math.ceil(height*normaliser);
 		}
 
+		
+		
 		width = (int) Math.ceil((float)width/minSoR);
 		height = (int) Math.ceil((float)height/minSoR);
 
-
+		
 
 		double maxArea = 600000000.0;
 		double vhiArea = 300000000.0;
 		double hiArea = 150000000.0;
 		double medArea = 50000000.0;
 		double loArea = 10000000.0;
+		
+		
+		long area = (long)width*(long)height;
+
+		
 		sf = 1.0;
 
 		if(resolution.equals("MAX")){
-			sf = Math.sqrt((maxArea/(width*height)));
+			sf = Math.sqrt((maxArea/(area)));
 		}else if(resolution.equals("VHI")){
-			sf = Math.sqrt((vhiArea/(width*height)));
+			sf = Math.sqrt((vhiArea/(area)));
 		}else if(resolution.equals("HI")){
-			sf = Math.sqrt((hiArea/(width*height)));
+			sf = Math.sqrt((hiArea/(area)));
 		}else if(resolution.equals("MED")){
-			sf = Math.sqrt((medArea/(width*height)));
+			sf = Math.sqrt((medArea/(area)));
 		}else if(resolution.equals("LO")){
-			sf = Math.sqrt((loArea/(width*height)));
+			sf = Math.sqrt((loArea/(area)));
 		}
 
+		
+		
 		width*=sf;
 		height*=sf;
 
+		
 		imBinWidth = (int) (width/(numOfBins));
 		width = (int) (imBinWidth*(numOfBins));
 
@@ -405,7 +424,7 @@ public class Timeline {
 		break;
 		case "GRP" : System.out.println("GRP");grpPrint(g2d);
 		break;
-		case "RICH" : System.out.println("RICH");generateColourList();richPrint(g2d);
+		case "RICH" : System.out.println("RICH");colourList=clg.generate(sDate, eDate, topX);richPrint(g2d);
 		break;
 		case "CONSOLE" : System.out.println("CONSOLE");consolePrint();
 		break;
@@ -433,10 +452,10 @@ public class Timeline {
 
 	void rawPrint(Graphics2D g){
 		for(TLBin b : bins) {
-			g.setColor(Color.blue);
+			g.setColor(rcvColour);
 			int rcvHeight = (int) (b.rcvRaw*unitHeight);
 			g.fillRect(b.id*imBinWidth, imCentre, imBinWidth, rcvHeight);
-			g.setColor(Color.green);
+			g.setColor(sendColour);
 			int sentHeight = (int) (b.sentRaw*unitHeight);
 			g.fillRect(b.id*imBinWidth, imCentre-sentHeight, imBinWidth, sentHeight);
 		}
@@ -447,18 +466,18 @@ public class Timeline {
 
 	void grpPrint(Graphics2D g){
 		for(TLBin b : bins) {
-			g.setColor(new Color(0,0,255));
+			g.setColor(rcvColour);
 			int rcvHeight = (int) (b.rcvRaw*unitHeight);
 			g.fillRect(b.id*imBinWidth, imCentre, imBinWidth, rcvHeight);
 			int rcvGRPHeight = (int) (b.rcvGRP*unitHeight);
-			g.setColor(new Color(0,122,255));
+			g.setColor(grpRcvColour);
 			g.fillRect(b.id*imBinWidth, imCentre+(rcvHeight-rcvGRPHeight), imBinWidth, rcvGRPHeight);
 
-			g.setColor(new Color(0,142,48));
+			g.setColor(sendColour);
 			int sentHeight = (int) (b.sentRaw*unitHeight);
 			g.fillRect(b.id*imBinWidth, imCentre-sentHeight, imBinWidth, sentHeight);
 			int sentGRPHeight = (int) (b.sntGRP*unitHeight);
-			g.setColor(new Color(0,255,122));
+			g.setColor(grpSendColour);
 			g.fillRect(b.id*imBinWidth, imCentre-sentHeight, imBinWidth, sentGRPHeight);
 		}
 	}

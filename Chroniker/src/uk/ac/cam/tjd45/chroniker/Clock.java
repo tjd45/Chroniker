@@ -33,6 +33,8 @@ public class Clock {
 	public ArrayList<Message> allMess;
 
 	private databaseInteracter dbi = new databaseInteracter();
+	
+	private ColourListGenerator clg = new ColourListGenerator();
 
 	public static Date parseDate(String date) {
 		try {
@@ -54,7 +56,9 @@ public class Clock {
 	public Map<Integer,Color> colourList = new HashMap<Integer,Color>();
 
 	public int topXSent = 5;
-
+	public int topX = 19;
+	
+	
 	int spokeLength;
 
 	Color sendColour = new Color(255,0,120);
@@ -83,7 +87,7 @@ public class Clock {
 			hours.add(new Hour(i));
 		}
 
-
+		colourList = clg.generate(sDate, eDate, topX);
 
 	}
 
@@ -172,7 +176,7 @@ public class Clock {
 		}
 
 
-		generateColourList();
+		//generateColourList();
 		System.out.println("Hours Generated");
 
 	}

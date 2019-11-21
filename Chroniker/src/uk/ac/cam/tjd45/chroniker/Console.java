@@ -23,18 +23,18 @@ public class Console {
 	public static String outputLoc = "/Users/ThomasDavidson/Documents/Program Output/Chroniker/";
 
 	public static void main(String[] args){
-//						Timeline tl = new Timeline("DAY","01-01-2017","01-12-2019");	
-//						tl.generateBins(882);
-//						tl.print("RAW","MED");
+//					Timeline tl = new Timeline("YEAR","","");	
+//						tl.generateBins();
+//						tl.print("RICH","MED");
 
-		//		Calendar cal = new GregorianCalendar(2015,8,1);
-		//		ConversationMap cm = new ConversationMap(sdf.format(cal.getTime()),"");
-		//		cm.generateNodes();
-		//		cm.print(outputLoc, "MEDLO", "gsc");
-
+//				Calendar cal = new GregorianCalendar(2010,9,1);
+//				ConversationMap cm = new ConversationMap("01-10-2017","01-10-2018");
+//				cm.generateNodes();
+//				cm.print(outputLoc, "MEDLO", "gsc");
+//
 		Clock clk = new Clock("","");
-		clk.generateHours();
-		clk.print(outputLoc, "","x");
+		clk.generateHours(1017);
+		clk.print(outputLoc, "","xn");
 
 
 	}
